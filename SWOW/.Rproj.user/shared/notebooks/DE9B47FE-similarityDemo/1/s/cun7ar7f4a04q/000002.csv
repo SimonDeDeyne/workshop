@@ -1,0 +1,2 @@
+"0","cue_pizza = USF %>% filter(cue=='pizza') %>% arrange(-R1.Strength)"
+"0","print(cue_pizza)"

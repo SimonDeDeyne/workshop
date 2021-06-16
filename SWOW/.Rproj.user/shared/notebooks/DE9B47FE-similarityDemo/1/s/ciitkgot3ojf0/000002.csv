@@ -1,0 +1,2 @@
+"0","# First we convert the strength to PPMI using the SWOW package funtion getPPMI"
+"0","G.ppmi = getPPMI(G.strength)"

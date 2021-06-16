@@ -1,0 +1,121 @@
+---
+title: "SWOW Visualization"
+#output: html_notebook
+output:
+  html_notebook:
+    toc: true
+    toc_float: true
+    theme: united
+bibliography: workshop.bib
+---
+
+```{r include = FALSE}
+library(SWOW)
+#library(knitr)
+options(scipen = 999)
+
+```
+
+
+# Load network
+For this example, we will use the USF network [@Nelson2004] as it is fairly small. If you have time, you can also play around with the larger `EAT` or English SWOW `SWen` graphs.
+Below are some basic networks statistics.
+
+
+```{r}
+G.usf  = importGraph(USF)
+print(G.usf)
+```
+
+The `tidygraph` package is used to represented the graph as a table of nodes (and attributes) and a table of edges, consisting of a head (from) and tail (to), together with a weight (associative strenght in this case).
+
+
+# Entire network visualization
+Visualizations of large networks are often not very informative, as they typically result in a messy hairball.
+To illustrate the USF network is plotted below using the native `igraph` plotting function.
+
+```{r igraphPlot, fig.show=TRUE,fig.align='center'}
+# Plot the entire network with igraph
+plot(igraph::simplify(G.usf),layout=igraph::layout_with_lgl, vertex.color="black",vertex.size=1,vertex.label = NA,edge.arrow.size = 0,edge.width = 0.2)
+```
+
+
+# Subgraph visualization
+## Ego-networks
+A better option is to visualize a subgraph, based on a node and its neighbors.  We switch to the `ggraph` package and define a subgraph for a specific node (*pizza*) that includes both the neighbors and the neighbor's neighbors of that node (indicated by the `order = 2` option).
+
+
+```{r}
+targetWord = 'pizza'
+
+G.sub = igraph::make_ego_graph(G.usf, order = 2, nodes = targetWord, mode = "all", mindist = 0)[[1]]
+
+# Add clusters or communities
+G.sub = addCommunity(as_tbl_graph(G.sub),1)
+
+# Here we use the ggraph package which offers more layout options
+fig.com = ggraph(G.sub,layout = "drl")+
+  geom_edge_link0(aes(edge_width = weight),edge_colour = "grey66",alpha = 0.1)+
+  geom_node_point(aes(fill = community,color = community), alpha = 0.8, stroke = 0, size = 1) +
+  scale_fill_viridis_d(option = 'A') +
+  scale_edge_width(range = c(0.02,0.4)) + 
+  theme_graph() +
+  coord_fixed() + 
+  theme(legend.position = "none")
+```
+<center>
+```{r echo=FALSE,fig.show=TRUE,fig.height=6}
+fig.com
+```
+</center>
+
+  
+
+The `SWOW` package offers a few convenient functions to lay out labeled word association graphs quickly.
+
+
+```{r egoGraph}
+targetword = 'Italian'
+G.ego = extractEgoGraph(G.usf,v = targetword,0.01)
+fig.ego = plotEgoGraph(G.ego,PF = FALSE,layoutAlg = 'stress')
+```
+
+<center>
+```{r italianEgo, echo=FALSE,fig.show=TRUE,fig.height=5,fig.width=5}
+print(fig.ego)
+```
+</center>
+
+One common problem with even small networks is that there are still a large number of edges. These can be filtered out by setting a threshold on the edge weights. However, a statistical approach to filtering the graph is the use of the `PathFinder` algorithm, which does for networks what `MDS` does for distance matrices. Without going into the psychometric properties, the code below demonstrates how `PathFinder` helps highlighting the underlying structure of the graph.
+
+```{r PathFinder, echo=TRUE}
+fig.pf = plotEgoGraph(G.ego,PF = TRUE,q = 2,r = Inf,layoutAlg = 'stress')
+```
+
+<center>
+```{r figPF, echo=FALSE,show.fig=TRUE, fig.height=6,fig.width=6}
+fig.pf
+```
+</center>
+
+<!-- ## Network paths -->
+<!-- TODO -->
+
+# Key responses
+One of the problems with the previous visualizations is that it is difficult to interpret the importance of nodes when the nodes are closely related and might be considered to represent a single concept or topic. Hierarchical circle packing plots offer an alternative solution this issue by grouping similar nodes together using hierarchical clustering and indicating their importance using nested circles. The `plotCirclepack` function is included in the `SWOW` package to make this easier.
+
+```{r circlePack}
+# Experiment with maxHeight to indicate the cutoff in the hierarchical clustering.
+# This will affect the number of elements in the packed circles.
+fig.circle  = plotCirclepack(G.ego,maxHeight = 20)
+```
+
+<center>
+```{r circleFig, echo=FALSE,fig.show = TRUE,fig.height=5}
+fig.circle
+
+```
+</center>
+
+
+# References

@@ -1,0 +1,6 @@
+"0","X.ratings = read.delim('./rawdata/similarityRatings/simRatings.csv',sep = ',') %>% as_tibble()"
+"0",""
+"0","# Extract unique word list from the ratings that are also in the list of vertices "
+"0","wordlist = unique(c(as.character(X.ratings$WordA),as.character(X.ratings$WordB)))"
+"0",""
+"0","print(X.ratings %>% group_by(dataset) %>% summarise(n = n()))"

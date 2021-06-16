@@ -1,0 +1,5 @@
+"0","fig.pf = plotEgoGraph(G.ego,PF = TRUE,q = 2,r = Inf,layoutAlg = 'stress')"
+"2","Graph density original: 10.21
+"
+"2","Graph density pathfinder: 5.18
+"

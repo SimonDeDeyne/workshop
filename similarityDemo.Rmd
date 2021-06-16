@@ -1,0 +1,305 @@
+---
+title: "SWOW Similarity Analysis"
+#output: html_notebook
+output:
+  html_notebook:
+    toc: true
+    toc_float: true
+    theme: united
+bibliography: workshop.bib    
+---
+
+```{r include = FALSE}
+library(SWOW)
+library(knitr)
+library(tictoc)
+library(broom)
+options(scipen = 999)
+
+```
+
+
+# Load USF network
+
+```{r}
+G.strength  = importGraph(USF)
+```
+
+# Associative Strength
+Associative strength is the probability of a response given a cue:
+$$
+P(r_i|c_j) = \frac{count(r_i|c_j)}{\sum_i{count(r_i|c_j})}
+$$
+The problem with associative strength is that it is heavily biased towards frequent responses, regardless of the cue. Similar to collocation analysis, the statistical strength of specific responses co-occurring with specific cues can be calculated in a number of ways. Here we use *positive point-wise mutual information* (`PPMI`). The positive version is used as the negative information is less reliable in any but extremely large datasets and it solves the issue of having negative edge weights in graphs. However, an alternative approach would be to construct a multiplex graph both with positive weights but one based negative edges (words co-occurring less than expected) and another based on the positive PPMI values.
+
+Let's illustrate this with an example. Before moving the the network, we simple pull the responses from the raw association data.
+```{r}
+cue_pizza = USF %>% filter(cue=='pizza') %>% arrange(-R1.Strength)
+print(cue_pizza)
+```
+
+
+Surely, pizza is *food* and *good*, and *yummy*, but so are a lot of other things. What ranking do we obtain after applying `PPMI`?
+
+Below we'll calculate `PPMI` on the raw data to break it down in simple steps. A more efficient function that operates on graphs is also available as part of the `SWOW` package. Further note that the raw data represent acue $\times$ response matrix instead of a cue $\times$ cue matrix, resulting in slightly different results. The joint probability is defined as:
+
+$$
+P(r,c) = \frac{count(r,c)}{\sum_ccount(c)} 
+$$
+Next, the PPMI association score is calculated as:
+
+$$
+assoc_{PPMI} = argmax( 0,log_2\frac{P(c,r)}{P(c)P(r)} )
+$$
+```{r}
+# Calculate the joint probabilities
+N_cue = USF %>% group_by(cue) %>% tally() %>% nrow()
+N_resp = sum(USF$R1)
+USF = USF %>% mutate(P_rc = R1.Strength / N_cue)
+USF = USF %>% group_by(cue) %>% mutate(P_c = n / N_cue)
+USF = USF %>% group_by(response) %>% mutate(n_R1 = sum(R1))
+USF = USF %>% group_by(response) %>% mutate(P_r = n_R1/N_resp)
+USF = USF %>% mutate(R1.PPMI = log2(P_rc/(P_c*P_r)))
+USF = USF %>% select(-P_rc,-P_c,-n_R1,-P_r)
+```
+
+
+Returning to the pizza example.
+```{r}
+cue_pizza = USF %>% filter(cue=='pizza') %>% arrange(-R1.PPMI)
+DT::datatable(cue_pizza)
+```
+
+We now see that *pepperoni* is the primary associate. There are potential caveats: if a response is very rare it `PPMI` will overestimate its importance, which explains the high value for `sickening`. We'll return to this issue later.
+
+# Semantic similarity
+Semantic similarity and associative strength (also referred to as relatedness) are intrinsically related. There are a number of measures that could be used and popular ones include `Jaccard` similarity and `Tanimoto` similarity. Here we will use the very common `cosine` similarity, which corresponds to the normalized dot product of two association vectors. Consider the vectors of the response distributions for two nodes $v_a$ and $v_b$, then the similarity is defined as:
+
+$$
+sim_{cos}(v_a,v_b) = \frac{\sum_{i=1}^N v_a(i) \times v_b(i)}{\sqrt{\sum_{i=1}^Nv_a(i)^2} \sqrt{\sum_{i=1}^Nv_b(i)^2}}
+$$
+
+Let's return the graph $G.{strength}$ and look at some examples.
+```{r}
+# First we convert the strength to PPMI using the SWOW package funtion getPPMI
+G.ppmi = getPPMI(G.strength)
+```
+
+We start by calculating the cosine similarity for a small set of word pairs.
+```{r}
+print(cosineMatrix(G.ppmi[c('pizza','pasta','chocolate','red'),]))
+```
+
+The results mostly make sense, but we also observe that *red* is not at all related or similar to *pizza* or *pasta*. How come?
+Let's see if they share any neighbors.
+```{r}
+nb_pasta = igraph::neighbors(G.ppmi,'pasta')
+nb_red = igraph::neighbors(G.ppmi,'red')
+print(nb_pasta)
+print(nb_red)
+```
+
+This doesn't seem to be the case. Yet, when I think of pasta, I do think about spaghetti and that makes me think about red sauce...
+```{r}
+igraph::intersection(nb_pasta,nb_red)
+```
+
+
+Are there any paths connecting *pasta* and *red*?
+
+```{r}
+igraph::get.all.shortest.paths(G.ppmi,'red',to = 'pasta')$res[[1]]
+
+```
+
+# Katz Index
+What if similarity would represent both direct neighbors and indirect neighbors or paths? 
+In graph theory, the idea of *structural equivalence* allows us to identify whether two nodes are similar or structurally equivalent if they have the same set of possible paths *across all other nodes* in the network. In psychology, spreading activation embodies the notion that both direct and indirect paths contribute to the meaning of a word.
+
+The following script computes a random walk similar to the Katz centrality procedure [see for example @Newman2010] to provide a simple implementation of spreading activation. It depends on a single parameter $\alpha$, which determines the contribution of longer paths (values of $\alpha$ should be > 0 and < 1). 
+
+The result is a path-augmented graph `G.rw`, which include weighted sum of all potential paths. This new graph can then be used to derive similarities from.  PPMI is used as an association strength measure. For more information see @DeDeyne2016JEPGEN.
+
+*Alpha.* Throughout most experiments $\alpha$ = .75 is a reasonable default to use. 
+
+*PPMI.* is known to have a bias for rare events, which does not affect typical word associations graphs with n < 12,000 words, but becomes a concern for larger graphs [@Turney2010]. In such cases, weighted PPMI versions can be considered [e.g. @Levy2015].
+
+```{r}
+alpha = 0.4
+P = igraph::as_adjacency_matrix(G.ppmi,attr='weight',names = TRUE)
+I = diag(1, dim(P)[1]);
+K = solve(I - alpha*P);
+P = PPMI(K)
+diag(P) = 0
+P = normalize(P,'l1')
+G.rw = igraph::graph_from_adjacency_matrix(Matrix::as.matrix(P),weighted = TRUE)
+```
+The edge density of the original graph was `r igraph::edge_density(G.ppmi)`, which increased in the augmented `G.rw` graph where the edge density is now `r igraph::edge_density(G.rw)`.
+`
+Have we inferred an indirect link between *pasta* and *red*?
+```{r}
+
+# Make it fancy: http://haozhu233.github.io/kableExtra/use_kableExtra_with_formattable.html
+G.rw['pasta','red']
+
+# Neighboring vertices to pasta from the Katz Index graph G.rw
+V.rw = data.frame(strength = G.rw['pasta',names(igraph::neighbors(G.rw,'pasta'))]) %>% 
+          rownames_to_column(. , var = 'name') %>% as_tibble()
+
+# Neighboring vertices to pasta from the PPMI graph G.ppmi
+V.ppmi = data.frame(strength = G.ppmi['pasta',names(igraph::neighbors(G.ppmi,'pasta'))]) %>% 
+          rownames_to_column(. , var = 'name')  %>% as_tibble()
+
+# Combine to compare
+V.joint = full_join(V.rw,V.ppmi,by  = 'name', suffix = c('.rw','.ppmi')) %>% 
+  as_tibble() %>% select(name,strength.rw,strength.ppmi) %>% arrange(-strength.rw)
+
+DT::datatable(V.joint)
+
+```
+
+Finding an indirect link between *pasta* and *red* will depend on the value of $\alpha$ as higher values ($\alpha$ = .5) induce more paths. Still, when filtering spurious paths with PPMI, the resulting graph remains sparse and the inferred indirect edges are somewhat reasonable.
+
+# Evaluation
+Which measure performs best in predicting similarity and relatedness between words? 
+How well can we predict ratings using just  associative strength? 
+To find answers to these questions we'll make use of publicly available similarity and relatedness datasets.
+```{r}
+X.ratings = read.delim('./rawdata/similarityRatings/simRatings.csv',sep = ',') %>% as_tibble()
+
+# Extract unique word list from the ratings that are also in the list of vertices 
+wordlist = unique(c(as.character(X.ratings$WordA),as.character(X.ratings$WordB)))
+
+print(X.ratings %>% group_by(dataset) %>% summarise(n = n()))
+vNames = igraph::V(G.strength)$name
+wordlist = intersect(wordlist,vNames)
+
+```
+
+The number of unique words is `r length(wordlist)`. To efficiently calculate similarity we'll calculate all pairwise similarities from the wordlist, which will result in a `r length(wordlist)` $\times$ `r length(wordlist)` similarity matrix `S`.
+
+```{r}
+pairs = X.ratings %>% mutate(WordA = as.character(WordA),WordB = as.character(WordB)) %>%
+  filter(WordA %in% vNames,WordB %in% vNames) %>% 
+  group_by(WordA,WordB) %>% tally() 
+
+# Calculate strength similarity
+S.strength = cosineMatrix(G.strength[wordlist,])
+S.ppmi = cosineMatrix(G.ppmi[wordlist,])
+S.rw = cosineMatrix(G.rw[wordlist,])
+
+X.sim = tibble('WordA' =pairs$WordA, 'WordB' = pairs$WordB,
+                 'cos_strength' = S.strength[cbind(pairs$WordA,pairs$WordB)],
+                 'cos_ppmi' = S.ppmi[cbind(pairs$WordA,pairs$WordB)],
+                 'cos_rw' = S.rw[cbind(pairs$WordA,pairs$WordB)])
+
+```
+
+## Similarity results
+```{r echo=FALSE}
+# The following lines of code are a bit more advanced and rely on the broom package.
+# see https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html
+# Basically we nest the data to apply a correlation test to each dataset, and 
+# tidy it so we get all test statistics in a clean dataframe.
+# Add to the original ratings
+X.results = inner_join(X.ratings,X.sim, by = c('WordA','WordB'))
+
+X.r = X.results %>% nest(data = -dataset) %>% 
+  mutate(r_strength = map(data, ~ cor.test(.x$Rating,.x$cos_strength)),
+        r_strength = map(r_strength, tidy)) %>% 
+  mutate(r_ppmi = map(data, ~ cor.test(.x$Rating,.x$cos_ppmi)),
+        r_ppmi = map(r_ppmi, tidy)) %>%
+  mutate(r_rw = map(data, ~ cor.test(.x$Rating,.x$cos_rw)),
+        r_rw = map(r_rw, tidy))
+  
+X.r = X.r %>% unnest(cols = c(r_strength,r_ppmi,r_rw), names_sep = '.')
+
+print(X.r %>% mutate(r.strength = round(r_strength.estimate,3),
+                            r.ppmi = round(r_ppmi.estimate,3), 
+                            r.rw = round(r_rw.estimate,3)) %>% 
+        select(dataset,r.strength,r.ppmi,r.rw))
+```
+
+
+Notice how cosine estimates based on associative strength don't perform that well. This suggest that word associations themselves provide a poor approximation of relatedness. Still, we know don't whether direct association might also explain these findings. Moreover, given that association measures are asymmetric (in contrast to cosine similarity), the directionality of the links might also be informative.
+
+## Forward association results
+Potentially when participants judge relatedness, they might be able to do so by only considering the associative strength between the two words instead of comparing a wide range of paths connecting them. To test this, we predict similarity ratings using forward strength measures.
+```{r}
+# Look up forward and backward associative strength
+# Note: here we're indexing on a full graph, which means this needs to fit in memory
+tmp.strength = as.array(igraph::as_adjacency_matrix(G.strength,attr='weight',names = TRUE))
+tmp.ppmi = as.array(igraph::as_adjacency_matrix(G.ppmi,attr='weight',names = TRUE))
+tmp.rw  = as.array(igraph::as_adjacency_matrix(G.rw,attr='weight',names = TRUE))
+
+X.asso = tibble('WordA' =pairs$WordA, 'WordB' = pairs$WordB,
+                 'fw_strength' = tmp.strength[cbind(pairs$WordA,pairs$WordB)],
+                 'fw_ppmi' = tmp.ppmi[cbind(pairs$WordA,pairs$WordB)],
+                 'fw_rw' = tmp.rw[cbind(pairs$WordA,pairs$WordB)],
+                 'bw_strength' = tmp.strength[cbind(pairs$WordB,pairs$WordA)],
+                 'bw_ppmi' = tmp.ppmi[cbind(pairs$WordB,pairs$WordA)],
+                 'bw_rw' = tmp.rw[cbind(pairs$WordB,pairs$WordA)])
+
+
+# Add to the original ratings
+X.resultsA = inner_join(X.ratings,X.asso, by = c('WordA','WordB'))
+
+# Ignore strength = 0 
+X.resultsA = X.resultsA %>% filter(fw_strength > 0, fw_ppmi > 0, fw_rw >0)
+
+X.rFW = X.resultsA %>% nest(data = -dataset) %>% 
+  mutate(fw_strength = map(data, ~ cor.test(.x$Rating,.x$fw_strength)),
+        fw_strength = map(fw_strength, tidy),
+        fw_ppmi = map(data, ~ cor.test(.x$Rating,.x$fw_ppmi)),
+        fw_ppmi = map(fw_ppmi, tidy),
+        fw_rw = map(data, ~ cor.test(.x$Rating,.x$fw_rw)),
+        fw_rw = map(fw_rw, tidy))
+  
+X.rFW = X.rFW %>% unnest(cols = c(fw_strength,fw_ppmi,fw_rw), names_sep = '.')
+
+# Only keep datasets with at least 40 observations
+print(X.rFW %>% mutate(r.strength = round(fw_strength.estimate,3),
+                            r.ppmi = round(fw_ppmi.estimate,3), 
+                            r.rw = round(fw_rw.estimate,3)) %>% 
+        select(dataset,parameter = fw_strength.parameter,r.strength,r.ppmi,r.rw) %>%
+        filter(parameter > 40))
+
+```
+
+## Backward association results
+Predict similarity ratings using backward strength.
+```{r}
+# Add to the original ratings
+X.resultsA = inner_join(X.ratings,X.asso, by = c('WordA','WordB'))
+
+# Ignore strength = 0 
+X.resultsA = X.resultsA %>% filter(bw_strength > 0, bw_ppmi > 0, bw_rw >0)
+
+X.rBW = X.resultsA %>% nest(data = -dataset) %>% 
+  mutate(bw_strength = map(data, ~ cor.test(.x$Rating,.x$bw_strength)),
+        bw_strength = map(bw_strength, tidy),
+        bw_ppmi = map(data, ~ cor.test(.x$Rating,.x$bw_ppmi)),
+        bw_ppmi = map(bw_ppmi, tidy),
+        bw_rw = map(data, ~ cor.test(.x$Rating,.x$bw_rw)),
+        bw_rw = map(bw_rw, tidy))
+  
+X.rBW = X.rBW %>% unnest(cols = c(bw_strength,bw_ppmi,bw_rw), names_sep = '.')
+
+# Only keep datasets with at least 40 observations
+print(X.rBW %>% mutate(r.strength = round(bw_strength.estimate,3),
+                            r.ppmi = round(bw_ppmi.estimate,3), 
+                            r.rw = round(bw_rw.estimate,3)) %>% 
+        select(dataset,parameter = bw_strength.parameter,r.strength,r.ppmi,r.rw) %>%
+        filter(parameter > 40))
+
+```
+
+
+Associative strength still doesn't perform as well as the more informative measures (`PPMI` and `RW`), regardless of the directionality. More general, these results suggest that similarity and relatedness judgments are better approximated by overlap measures such as cosine similarity. It is an open question what this means for studies that simultaneously contrast associative and similarity-based relations (e.g. associative vs semantic priming).
+
+# Exercises
+* Combine similarity and association data so we have matched observations. 
+* Compare the results for an undirected and directed network. When will this improve predictions?
+* Extract a network with negative PPMI information and combine it with a network with postive information. Calculate similarity according to Tversky's Contrast Model [@Tversky1977].
+
+# References

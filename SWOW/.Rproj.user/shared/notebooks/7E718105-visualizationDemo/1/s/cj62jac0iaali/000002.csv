@@ -1,0 +1,2 @@
+"0","# Plot the entire network with igraph"
+"0","plot(igraph::simplify(G.usf),layout=igraph::layout_with_lgl, vertex.color=""black"",vertex.size=1,vertex.label = NA,edge.arrow.size = 0,edge.width = 0.2)"

@@ -1,0 +1,512 @@
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% filter(wordType = 'Abstract') %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% filter(wordType == 'Abstract') %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% filter(wordType == 'Concrete') %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+m.csdp = lm(RT ~ eigen + nb2_in + nb2_out, data = X.csdp)
+summary(m.csdp)
+#X.ECP = read.delim()
+sqrt(0.09797)
+m.csdp = lm(RT ~ nb2_in + nb2_out, data = X.csdp)
+summary(m.csdp)
+m.csdp$effects
+m.csdp = lm(RT ~ nb2_in + nb2_out, data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+# Load Calgary Semantic Decision Project Data
+#X.csdp = read.csv('./rawdata/CalgarySemanticDecision/CalgarySemanticDecision.csv',stringsAsFactors = F) %>% as_tibble()
+X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%
+select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)
+# Average over participants
+# X.csdp = X.csdp %>% filter(complete.cases(RTclean)) %>% group_by(Word,WordTypeAC) %>%
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+m.csdp = lm(RT ~ log(nb2_in+1) + log(nb2_out+1), data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+m.csdp = lm(RT ~ log(nb2_in+1) + nb2_out, data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+m.csdp = lm(RT ~ sqrt(nb2_in) + sqrt(nb2_out), data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+plot(RT ~ nb2_in,data = X.csdp)
+plot(nb2_in ~ RT,data = X.csdp)
+plot(nb2_out ~ RT,data = X.csdp)
+plot(nb2_out ~ log(RT),data = X.csdp)
+plot(nb2_out ~ log(RT+50),data = X.csdp)
+plot(nb2_out ~ sqrt(RT),data = X.csdp)
+plot(log(nb2_out) ~ (RT),data = X.csdp)
+hist(X.csdp$nb2_in)
+hist(X.csdp$nb2_out)
+hist(X.csdp$nb2_in)
+hist(log(X.csdp$nb2_in))
+hist(log(X.csdp$nb2_in+1))
+m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+X.sdev = read.delim('./rawdata/SemanticDiversity/semanticDiversityHoffman2013.csv') %>% as_tibble()
+X.sdev
+X.sdev = read.delim('./rawdata/SemanticDiversity/semanticDiversityHoffman2013.csv') %>% as_tibble()
+X.sdev
+X.sdev = read.delim('./rawdata/SemanticDiversity/semanticDiversityHoffman2013.csv') %>% as_tibble()
+X.sdev
+X.csdp2 = inner_join(X.csdp,X.sdev,by ='word')
+X.csdp2
+DT::datatable(as.data.frame(round(cor(X.csdp2 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+m.csdp2 = lm(RT ~ log(nb2_in+1) + (nb2_out) + SemD, data = X.csdp2)
+summary(m.csdp2)
+0.14^0.5
+0.1419^0.5
+m.csdp2 = lm(RT ~ SemD, data = X.csdp2)
+summary(m.csdp2)
+hist(X.csdp2$SemD)
+hist(log(X.csdp2$SemD))
+hist(sqrt(X.csdp2$SemD))
+hist(sqrt(1/X.csdp2$SemD))
+hist(atan(X.csdp2$SemD))
+hist(atan(-X.csdp2$SemD))
+cor(X.csdp2 %>% select(-word,-wordType),method = 'spearman')
+m.csdp2 = lm(RT ~ SemD, data = X.csdp2)
+summary(m.csdp2)
+0.0344^0.5
+X.ecd = read.csv('./rawdata/EnglishLexiconProject/ELPzScores.csv',stringsAsFactors = F) %>% as_tibble()
+X.ecd
+X.ecd$zECP_24
+X.ecd = read.csv('./rawdata/EnglishLexiconProject/ELPzScores.csv',stringsAsFactors = F) %>% as_tibble() %>%
+select(word = Word,length = Length, ON = Ortho_N,prevalence = Prevalence,ECP_RT,zRT = zECP_24,WF = SubtlexZipf)
+X.ecd
+X.csdp3 = inner_join(X.csdp,X.ecd,by ='word')
+X.csdp3
+cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')
+cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy')
+]
+cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')]
+cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating','zRT','ECP_RT')]
+DT::datatable(cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating','zRT','ECP_RT')])
+DT::datatable(round(cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating','zRT','ECP_RT')],2))
+?data
+data(SWOW)
+G.usf  = importGraph(SWen)
+# In this case we want a simple graph with no loops and multiple edges.
+message('Is the graph simple? ', igraph::is_simple(G.usf))
+# Let's take a look
+print(igraph::E(G.usf)[[igraph::which_loop(G.usf)]])
+G.usf = igraph::simplify(G.usf)
+Hapax.usf = getHapaxNodes(G.usf,mode = 'strong')
+comp.usf = igraph::components(G.usf,mode = 'strong')
+comp.usf = data.frame(component_size = comp.usf$csize) %>% group_by(component_size) %>% tally()
+print(comp.usf)
+# Reduce to the largest connected component
+G.usf = getLargestComponent(G.usf,mode = 'strong')
+# Since this removes nodes, it affects the normalized associative strength edge weights.
+# Let's recompute:
+G.usf = normalizeEdgeWeights(G.usf)
+ct_k = tibble(names  = igraph::V(G.usf)$name,
+degree_in = igraph::degree(G.usf, mode = 'in'),
+degree_out = igraph::degree(G.usf, mode = 'out'),
+strength_in = igraph::strength(G.usf,mode = 'in'),
+strength_out = igraph::strength(G.usf, mode = 'out'))
+DT::datatable(ct_k)
+# Transpose the graph
+#Gt.usf = G.usf %>% igraph::get.edgelist() %>% {cbind(.[,2],.[,1])} %>% igraph::graph.edgelist()
+ct_pr = tibble(names = igraph::V(G.usf)$name,
+pr_out1 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.1)$vector,
+pr_out2 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.2)$vector,
+pr_out5 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.5)$vector,
+pr_out7 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.7)$vector,
+eigen = igraph::eigen_centrality(G.usf,directed = TRUE,scale = TRUE)$vector)
+DT::datatable(cbind(ct_pr$names,round(ct_pr %>% select(-names),5)))
+X.ct = left_join(ct_k,ct_pr,by = 'names')
+m_ct = lm(strength_in ~ pr_out5,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.pr = ggplot(X.ct,aes(x = strength_in,y = pr_out5)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('PageRank centrality')
+m_ct = lm(strength_in ~ eigen,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.eig = ggplot(X.ct,aes(x = strength_in,y = eigen)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('Eigencentrality')
+grid.arrange(fig.eig, fig.pr, ncol = 2)
+library(htmltools)
+library(SWOW)
+library(knitr)
+library(gridExtra)
+X.ct = left_join(ct_k,ct_pr,by = 'names')
+m_ct = lm(strength_in ~ pr_out5,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.pr = ggplot(X.ct,aes(x = strength_in,y = pr_out5)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('PageRank centrality')
+m_ct = lm(strength_in ~ eigen,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.eig = ggplot(X.ct,aes(x = strength_in,y = eigen)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('Eigencentrality')
+grid.arrange(fig.eig, fig.pr, ncol = 2)
+# Load Calgary Semantic Decision Project Data
+#X.csdp = read.csv('./rawdata/CalgarySemanticDecision/CalgarySemanticDecision.csv',stringsAsFactors = F) %>% as_tibble()
+X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%
+select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)
+# Average over participants
+# X.csdp = X.csdp %>% filter(complete.cases(RTclean)) %>% group_by(Word,WordTypeAC) %>%
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+# Correct the skew in nb2_in
+m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
+ct_nb = tibble(names = igraph::V(G.usf)$name,
+nb2_out = igraph::neighborhood.size(G.usf,order = 2,mode = 'out'),
+nb2_in = igraph::neighborhood.size(G.usf,order = 2,mode = 'in'))
+X.ct = left_join(X.ct,ct_nb,by = 'names')
+DT::datatable(cbind(ct_nb$names,round(ct_nb %>% select(-names),5)))
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_nb,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_k,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+# Load Calgary Semantic Decision Project Data
+#X.csdp = read.csv('./rawdata/CalgarySemanticDecision/CalgarySemanticDecision.csv',stringsAsFactors = F) %>% as_tibble()
+X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%
+select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)
+# Average over participants
+# X.csdp = X.csdp %>% filter(complete.cases(RTclean)) %>% group_by(Word,WordTypeAC) %>%
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+# Correct the skew in nb2_in
+m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+X.sdev = read.delim('./rawdata/SemanticDiversity/semanticDiversityHoffman2013.csv') %>% as_tibble()
+X.csdp2 = inner_join(X.csdp,X.sdev,by ='word')
+m.csdp2 = lm(RT ~ log(nb2_in+1) + (nb2_out) + SemD, data = X.csdp2)
+m.csdp2 = lm(RT ~ SemD, data = X.csdp2)
+summary(m.csdp2)
+X.ecd = read.csv('./rawdata/EnglishLexiconProject/ELPzScores.csv',stringsAsFactors = F) %>% as_tibble() %>%
+select(word = Word,length = Length, ON = Ortho_N,prevalence = Prevalence,ECP_RT,zRT = zECP_24,WF = SubtlexZipf)
+X.csdp3 = inner_join(X.csdp,X.ecd,by ='word')
+DT::datatable(as.data.frame(round(cor(X.csdp3 %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+G.usf  = importGraph(EAT)
+# In this case we want a simple graph with no loops and multiple edges.
+message('Is the graph simple? ', igraph::is_simple(G.usf))
+# Let's take a look
+print(igraph::E(G.usf)[[igraph::which_loop(G.usf)]])
+G.usf = igraph::simplify(G.usf)
+comp.usf = igraph::components(G.usf,mode = 'strong')
+comp.usf = data.frame(component_size = comp.usf$csize) %>% group_by(component_size) %>% tally()
+print(comp.usf)
+# Reduce to the largest connected component
+G.usf = getLargestComponent(G.usf,mode = 'strong')
+# Since this removes nodes, it affects the normalized associative strength edge weights.
+# Let's recompute:
+G.usf = normalizeEdgeWeights(G.usf)
+ct_k = tibble(names  = igraph::V(G.usf)$name,
+degree_in = igraph::degree(G.usf, mode = 'in'),
+degree_out = igraph::degree(G.usf, mode = 'out'),
+strength_in = igraph::strength(G.usf,mode = 'in'),
+strength_out = igraph::strength(G.usf, mode = 'out'))
+DT::datatable(ct_k)
+ct_nb = tibble(names = igraph::V(G.usf)$name,
+nb2_out = igraph::neighborhood.size(G.usf,order = 2,mode = 'out'),
+nb2_in = igraph::neighborhood.size(G.usf,order = 2,mode = 'in'))
+X.ct = left_join(X.ct,ct_nb,by = 'names')
+DT::datatable(cbind(ct_nb$names,round(ct_nb %>% select(-names),5)))
+# Transpose the graph
+#Gt.usf = G.usf %>% igraph::get.edgelist() %>% {cbind(.[,2],.[,1])} %>% igraph::graph.edgelist()
+ct_pr = tibble(names = igraph::V(G.usf)$name,
+pr_out1 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.1)$vector,
+pr_out2 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.2)$vector,
+pr_out5 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.5)$vector,
+pr_out7 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.7)$vector,
+eigen = igraph::eigen_centrality(G.usf,directed = TRUE,scale = TRUE)$vector)
+DT::datatable(cbind(ct_pr$names,round(ct_pr %>% select(-names),5)))
+X.ct = left_join(ct_k,ct_pr,by = 'names')
+m_ct = lm(strength_in ~ pr_out5,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.pr = ggplot(X.ct,aes(x = strength_in,y = pr_out5)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('PageRank centrality')
+m_ct = lm(strength_in ~ eigen,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.eig = ggplot(X.ct,aes(x = strength_in,y = eigen)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('Eigencentrality')
+grid.arrange(fig.eig, fig.pr, ncol = 2)
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_nb,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_k,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+# Load Calgary Semantic Decision Project Data
+#X.csdp = read.csv('./rawdata/CalgarySemanticDecision/CalgarySemanticDecision.csv',stringsAsFactors = F) %>% as_tibble()
+X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%
+select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)
+# Average over participants
+# X.csdp = X.csdp %>% filter(complete.cases(RTclean)) %>% group_by(Word,WordTypeAC) %>%
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+# Correct the skew in nb2_in
+m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
+ct_nb = tibble(names = igraph::V(G.usf)$name,
+nb2_out = igraph::neighborhood.size(G.usf,order = 2,mode = 'out'),
+nb2_in = igraph::neighborhood.size(G.usf,order = 2,mode = 'in'))
+X.ct = left_join(X.ct,ct_nb,by = 'names')
+DT::datatable(cbind(ct_nb$names,round(ct_nb %>% select(-names),5)))
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_nb,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_k,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+# Load Calgary Semantic Decision Project Data
+#X.csdp = read.csv('./rawdata/CalgarySemanticDecision/CalgarySemanticDecision.csv',stringsAsFactors = F) %>% as_tibble()
+X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%
+select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)
+# Average over participants
+# X.csdp = X.csdp %>% filter(complete.cases(RTclean)) %>% group_by(Word,WordTypeAC) %>%
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+# Correct the skew in nb2_in
+m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
+summary(m.csdp)
+message('r = ', summary(m.csdp)$adj.r.squared^0.5)
+#X.ECP = read.delim()
+X.sdev = read.delim('./rawdata/SemanticDiversity/semanticDiversityHoffman2013.csv') %>% as_tibble()
+X.csdp2 = inner_join(X.csdp,X.sdev,by ='word')
+m.csdp2 = lm(RT ~ log(nb2_in+1) + (nb2_out) + SemD, data = X.csdp2)
+m.csdp2 = lm(RT ~ SemD, data = X.csdp2)
+summary(m.csdp2)
+library(htmltools)
+library(SWOW)
+library(knitr)
+library(gridExtra)
+G.usf  = importGraph(USF)
+# In this case we want a simple graph with no loops and multiple edges.
+message('Is the graph simple? ', igraph::is_simple(G.usf))
+# Let's take a look
+print(igraph::E(G.usf)[[igraph::which_loop(G.usf)]])
+G.usf = igraph::simplify(G.usf)
+Hapax.usf = getHapaxNodes(G.usf,mode = 'strong')
+comp.usf = igraph::components(G.usf,mode = 'strong')
+comp.usf = data.frame(component_size = comp.usf$csize) %>% group_by(component_size) %>% tally()
+print(comp.usf)
+# Reduce to the largest connected component
+G.usf = getLargestComponent(G.usf,mode = 'strong')
+# Since this removes nodes, it affects the normalized associative strength edge weights.
+# Let's recompute:
+G.usf = normalizeEdgeWeights(G.usf)
+ct_k = tibble(names  = igraph::V(G.usf)$name,
+degree_in = igraph::degree(G.usf, mode = 'in'),
+degree_out = igraph::degree(G.usf, mode = 'out'),
+strength_in = igraph::strength(G.usf,mode = 'in'),
+strength_out = igraph::strength(G.usf, mode = 'out'))
+DT::datatable(ct_k)
+ct_nb = tibble(names = igraph::V(G.usf)$name,
+nb2_out = igraph::neighborhood.size(G.usf,order = 2,mode = 'out'),
+nb2_in = igraph::neighborhood.size(G.usf,order = 2,mode = 'in'))
+X.ct = left_join(X.ct,ct_nb,by = 'names')
+DT::datatable(cbind(ct_nb$names,round(ct_nb %>% select(-names),5)))
+# Transpose the graph
+#Gt.usf = G.usf %>% igraph::get.edgelist() %>% {cbind(.[,2],.[,1])} %>% igraph::graph.edgelist()
+ct_pr = tibble(names = igraph::V(G.usf)$name,
+pr_out1 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.1)$vector,
+pr_out2 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.2)$vector,
+pr_out5 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.5)$vector,
+pr_out7 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.7)$vector,
+eigen = igraph::eigen_centrality(G.usf,directed = TRUE,scale = TRUE)$vector)
+DT::datatable(cbind(ct_pr$names,round(ct_pr %>% select(-names),5)))
+X.ct = left_join(ct_k,ct_pr,by = 'names')
+m_ct = lm(strength_in ~ pr_out5,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.pr = ggplot(X.ct,aes(x = strength_in,y = pr_out5)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('PageRank centrality')
+m_ct = lm(strength_in ~ eigen,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.eig = ggplot(X.ct,aes(x = strength_in,y = eigen)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('Eigencentrality')
+grid.arrange(fig.eig, fig.pr, ncol = 2)
+# Assuming the cutoff for weighted paths is based on the diameter
+igraph::diameter(G.usf)
+ct_b = tibble(names = igraph::V(G.usf)$name,
+closeness_in = igraph::closeness(G.usf,normalized = T,mode = 'in'),
+closeness_out = igraph::closeness(G.usf,normalized = T,mode = 'out'),
+betweenness = igraph::betweenness(G.usf,directed = TRUE,normalized = T))
+X.ct = left_join(X.ct,ct_b,by = 'names')
+m_ct = lm(strength_in ~ betweenness,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 40,order_by = abs(cooks))
+fig1 = ggplot(X.ct,aes(x = strength_in,y = betweenness)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 100,size =3) +
+theme(aspect.ratio=1) +
+ggtitle('Betweenness')
+# Let's zoom in on the low range
+outlier = X.ct %>% filter(strength_in < 5) %>%  slice_max(n = 40,order_by = abs(cooks))
+fig2 = ggplot(X.ct %>% filter(strength_in<5),aes(x = strength_in,y = betweenness)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 100,size = 3) +
+theme(aspect.ratio=1) +
+ggtitle('Betweenness (Zoom)')
+grid.arrange(fig1, fig2, ncol = 2)
+X.ct = left_join(ct_k,ct_b,by = 'names')  %>% mutate(strength_in = log(strength_in))
+m_ct = lm(strength_in ~ closeness_in,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 40,order_by = abs(cooks))
+fig1 = ggplot(X.ct,aes(x = (strength_in),y = closeness_in)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+# geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+#                  aes(label = names),segment.color = 'purple',segment.alpha=0.5,max.overlaps = 1000,size =3) +
+theme(aspect.ratio=1)
+# Let's zoom in on the low range
+outlier = X.ct %>% filter(strength_in < 5) %>%  slice_max(n = 40,order_by = abs(cooks))
+fig2 = ggplot(X.ct %>% filter(strength_in<5,degree_in > 2),aes(x = (strength_in),y = closeness_in)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+# geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+#                  aes(label = names),segment.color = 'purple',segment.alpha=0.5,max.overlaps = 1000,size = 3) +
+theme(aspect.ratio=1)
+grid.arrange(fig1, fig2, ncol = 2)
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_nb,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+X.con = read.delim('./rawdata/english.concreteness.Brysbaert2016.csv',stringsAsFactors = F) %>% as_tibble()
+X.con = inner_join(ct_k,X.con,by = c('names'= 'Word'))
+cor(X.con %>% select(-names,-Dom_Pos),method = 'spearman')['Conc.M',]
+# Load Calgary Semantic Decision Project Data
+#X.csdp = read.csv('./rawdata/CalgarySemanticDecision/CalgarySemanticDecision.csv',stringsAsFactors = F) %>% as_tibble()
+X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%
+select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)
+# Average over participants
+# X.csdp = X.csdp %>% filter(complete.cases(RTclean)) %>% group_by(Word,WordTypeAC) %>%
+#                     summarise(zRT = mean(zRTclean), RT = mean(RTclean),
+#                               accuracy = mean(Word.ACC), .groups = 'drop') %>%
+#                     rename(word = Word,category = WordTypeAC)
+#X.ct = X.ct %>% select(word = names,degree_in,degree_out,strength_in,pr_out01,pr_out1,pr_out2,eigen)
+X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))
+DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))
+# Correct the skew in nb2_in
+m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
+X.ct = left_join(ct_k,ct_pr,by = 'names')
+m_ct = lm(strength_in ~ pr_out5,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.pr = ggplot(X.ct,aes(x = strength_in,y = pr_out5)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('PageRank centrality')
+m_ct = lm(strength_in ~ eigen,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+# Transpose the graph
+#Gt.usf = G.usf %>% igraph::get.edgelist() %>% {cbind(.[,2],.[,1])} %>% igraph::graph.edgelist()
+ct_pr = tibble(names = igraph::V(G.usf)$name,
+pr_out1 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.1)$vector,
+pr_out2 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.2)$vector,
+pr_out5 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.5)$vector,
+pr_out7 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.7)$vector,
+eigen = igraph::eigen_centrality(G.usf,directed = TRUE,scale = TRUE)$vector)
+DT::datatable(cbind(ct_pr$names,round(ct_pr %>% select(-names),5)))
+X.ct = left_join(ct_k,ct_pr,by = 'names')
+m_ct = lm(strength_in ~ pr_out5,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.pr = ggplot(X.ct,aes(x = strength_in,y = pr_out5)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('PageRank centrality')
+m_ct = lm(strength_in ~ eigen,data = X.ct)
+X.ct$cooks = cooks.distance(m_ct)
+outlier = X.ct %>% slice_max(n = 30,order_by = abs(cooks))
+fig.eig = ggplot(X.ct,aes(x = strength_in,y = eigen)) +
+geom_point(size = 0.3,alpha = 0.3,colour = '#DD4814') +
+geom_smooth(method = "lm", formula= y ~ x, se = FALSE,color = 'grey',size = 0.5) +
+geom_text_repel(data = X.ct %>% filter(names %in% outlier$names),
+aes(label = names),segment.color = '#DD4814',segment.alpha=0.5,max.overlaps = 1000) +
+theme(aspect.ratio=1) +
+ggtitle('Eigencentrality')
+grid.arrange(fig.eig, fig.pr, ncol = 2)

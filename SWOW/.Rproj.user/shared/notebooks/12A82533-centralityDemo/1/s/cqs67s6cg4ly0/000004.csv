@@ -1,0 +1,3 @@
+"0","# Remove any loops"
+"0","G.usf = igraph::simplify(G.usf)"
+"0",""

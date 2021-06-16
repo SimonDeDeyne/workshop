@@ -1,0 +1,8 @@
+"0","ct_nb = tibble(names = vlabels,"
+"0","                    nb3_out = igraph::neighborhood.size(G.usf,order = 3, mode = 'out'),"
+"0","                    nb3_in = igraph::neighborhood.size(G.usf,order = 3, mode = 'in'),               "
+"0","                    nb2_out = igraph::neighborhood.size(G.usf,order = 2, mode = 'out'),"
+"0","                    nb2_in = igraph::neighborhood.size(G.usf,order = 2, mode = 'in'))"
+"0",""
+"0",""
+"0","DT::datatable(cbind(ct_nb$names,round(ct_nb %>% select(-names),5)))"
