@@ -258,7 +258,7 @@ grid.arrange(fig1, fig2, ncol = 2)
 
 
 # Clustering measures
-A somewhat different measure capture the degree of clustering of a node. Most natural networks are strongly clustered. The local clustering coefficient captures the transitivity between triples of nodes. For example, in a social network this transitivity would indicate that your friends might also be friends among themselves. More precisely, the local clustering coefficient $C_{i}}C_{i}$ for a vertex $v_{i}}v_{i}$ represents a proportion of the number of links between the vertices within its neighborhood divided by the number of links that could possibly exist between them.
+A somewhat different measure capture the degree of clustering of a node. Most natural networks are strongly clustered. The local clustering coefficient captures the transitivity between triples of nodes. For example, in a social network this transitivity would indicate that your friends might also be friends among themselves. More precisely, the local clustering coefficient represents the proportion of the number of links between the vertices within its neighborhood divided by the number of links that could possibly exist between them.
 
 Things quickly get complicated in weighted and directed graphs, and in practice clustering coefficients are not very robust.
 
@@ -369,7 +369,6 @@ fig.csdp
 Note how the strongest correlations (in an absolute sense) are based on global measures like indirect neighborhood out-degree, eigencentrality or PageRank. Notably, we see that out-degree measures have a positive correlation (slower RTs) whereas in-degree measures have a negative correlation. Shortest path-based measured such as betweenness do not perform that well.
 
 
-Let's see how this compares to other types of predictors taken from the English Crowdsourcing Project (ECP) word prevalence data
 ```{r}
 # Correct the skew in nb2_in
 m.csdp = lm(RT ~ log(nb2_in+1) + (nb2_out), data = X.csdp)
@@ -377,7 +376,7 @@ print(summary(m.csdp))
 
 ```
 
-Finally, let's take at the @Mandera2020 English Word Prevalence RT data. These RTs measure how long it takes for participants to judge whether they "know" a word.
+Finally, let's take at the @Mandera2020 *English Word Prevalence RT* data. These RTs measure how long it takes for participants to judge whether they "know" a word.
 ```{r}
 X.ecd = read.csv('./rawdata/EnglishLexiconProject/ELPzScores.csv',stringsAsFactors = F) %>% as_tibble() %>%
   select(word = Word,length = Length, ON = Ortho_N,prevalence = Prevalence,ECP_RT,zRT = zECP_24,WF = SubtlexZipf)
