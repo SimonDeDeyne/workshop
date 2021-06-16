@@ -8,10 +8,10 @@ The Small World of Words project is crowd-sourced project to map the lexicon in 
 
 
 To install the `SWOW` package locally, run RStudio:
-`
-install.packages(‘devtools’)
+```R
+install.packages('devtools')
 library(devtools)
-install_github(‘SimonDeDeyne/workshop’)
-`
+install_github('SimonDeDeyne/workshop')
+```
 
 A copy of the workshop slides is also [available](./presentation/InnovativeLanguageToolsDeDeyne2021.pdf).
