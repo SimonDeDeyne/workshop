@@ -1,3 +1,0 @@
-"0","comp.usf = igraph::components(G.usf,mode = 'strong')"
-"0","comp.usf = data.frame(component_size = comp.usf$csize) %>% group_by(component_size) %>% tally()"
-"0","print(comp.usf)"

@@ -1,1 +1,0 @@
-"0","DT::datatable(cbind(ct_pr$names,round(ct_pr %>% select(-names),5)))"

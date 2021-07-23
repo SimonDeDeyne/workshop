@@ -1,7 +1,0 @@
-"0","ct_pr = tibble(names = vlabels,"
-"0","              pr_1 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.1)$vector,"
-"0","              pr_20 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.2)$vector,"
-"0","              pr_50 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.5)$vector,"
-"0","              pr_70 = igraph::page_rank(G.usf,directed = TRUE,damping = 0.7)$vector,"
-"0","              eigen = igraph::eigen_centrality(G.usf,directed = TRUE,scale = TRUE)$vector)"
-"2","At centrality.c:362 :Weighted directed graph in eigenvector centrality"

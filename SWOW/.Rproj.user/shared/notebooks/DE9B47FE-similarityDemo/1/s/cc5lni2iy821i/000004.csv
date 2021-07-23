@@ -1,3 +1,0 @@
-"0","vNames = igraph::V(G.strength)$name"
-"0","wordlist = intersect(wordlist,vNames)"
-"0",""

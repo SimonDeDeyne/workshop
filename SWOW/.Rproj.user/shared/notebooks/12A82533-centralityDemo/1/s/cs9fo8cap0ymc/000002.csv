@@ -1,6 +1,0 @@
-"0","# Both betweenness for directed and undirected paths are considered"
-"0","ct_b = tibble(names = vlabels, "
-"0","              betweenness = igraph::betweenness(G.usf,directed = TRUE,normalized = T),"
-"0","              betweennessU = igraph::betweenness(G.usf,directed = FALSE,normalized = T)"
-"0","              )"
-"0",""

@@ -1,6 +1,0 @@
-"0","# Load Calgary Semantic Decision Project Data"
-"0","X.csdp = read.delim('./rawdata/CalgarySemanticDecision/CalgarySemanticDecisionSummary.csv',sep = '\t') %>% as_tibble() %>%"
-"0","          select(word,wordType,RT = zRTclean_mean,accuracy = ACC,concreteRating)"
-"0",""
-"0","X.csdp = inner_join(X.csdp,X.ct,by = c('word' = 'names')) %>% filter(complete.cases(.))"
-"0","DT::datatable(as.data.frame(round(cor(X.csdp %>% select(-word,-wordType),method = 'spearman')[,c('RT','accuracy','concreteRating')],3)))"

@@ -1,7 +1,0 @@
-"0","ct_k = tibble(names  = vlabels,"
-"0","                    degree_in = igraph::degree(G.usf, mode = 'in'),"
-"0","                    degree_out = igraph::degree(G.usf, mode = 'out'),"
-"0","                    strength_in = igraph::strength(G.usf,mode = 'in'),"
-"0","                    strength_out = igraph::strength(G.usf, mode = 'out'))"
-"0",""
-"0","DT::datatable(ct_k)  "

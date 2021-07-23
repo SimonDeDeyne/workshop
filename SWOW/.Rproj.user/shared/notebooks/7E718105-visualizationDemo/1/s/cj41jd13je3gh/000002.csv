@@ -1,3 +1,0 @@
-"0","targetword = 'Italian'"
-"0","G.ego = extractEgoGraph(G.usf,v = targetword,0.01)"
-"0","fig.ego = plotEgoGraph(G.ego,PF = FALSE,layoutAlg = 'stress')"

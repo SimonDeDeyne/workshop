@@ -1,2 +1,0 @@
-"0","cue_pizza = USF %>% filter(cue=='pizza') %>% arrange(-R1.PPMI)"
-"0","DT::datatable(cue_pizza)"

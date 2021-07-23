@@ -1,4 +1,0 @@
-"0",""
-"0","z = igraph::transitivity(G.usf,type = 'localundirected',isolates = 'zero')"
-"0","ct_cc = tibble(names = vlabels, cc = igraph::transitivity(G.usf,type = 'barrat',isolates = 'zero'))"
-"0","X.ct = left_join(X.ct,ct_cc,by = 'names')"

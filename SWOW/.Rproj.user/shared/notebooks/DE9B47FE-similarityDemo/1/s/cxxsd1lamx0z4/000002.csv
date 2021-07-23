@@ -1,8 +1,0 @@
-"0","alpha = 0.4"
-"0","P = igraph::as_adjacency_matrix(G.ppmi,attr='weight',names = TRUE)"
-"0","I = diag(1, dim(P)[1]);"
-"0","K = solve(I - alpha*P);"
-"0","P = PPMI(K)"
-"0","diag(P) = 0"
-"0","P = normalize(P,'l1')"
-"0","G.rw = igraph::graph_from_adjacency_matrix(Matrix::as.matrix(P),weighted = TRUE)"
